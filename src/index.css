@@ -1,0 +1,513 @@
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  /* Modern theme additions */
+  --muted: #8b8693;
+  --surface: #ffffff;
+  --card: #fbfbfd;
+  --danger: #e74c3c;
+  --success: #2ecc71;
+  --glass: rgba(255,255,255,0.6);
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --code-bg: #1f2028;
+    --accent: #c084fc;
+    --accent-bg: rgba(192, 132, 252, 0.15);
+    --accent-border: rgba(192, 132, 252, 0.5);
+    --social-bg: rgba(47, 48, 58, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+body {
+  margin: 0;
+}
+
+/* App container */
+.app-container {
+  max-width: 1126px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Card */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(12,12,12,0.06);
+  padding: 16px;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform .08s ease, box-shadow .08s ease, opacity .12s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-h);
+  border-color: var(--border);
+}
+
+/* Selected state for choice buttons */
+.btn.selected {
+  background: var(--accent);
+  color: white;
+  border-color: transparent;
+}
+
+.btn-outline.selected {
+  background: rgba(170,59,255,0.08);
+  border-color: var(--accent);
+  color: var(--text-h);
+}
+
+.btn-danger {
+  background: var(--danger);
+  border-color: rgba(0,0,0,0.04);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* Header/Nav */
+.site-header {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-link {
+  text-decoration: none;
+  color: var(--text-h);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.nav-inline {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.site-nav a {
+  color: var(--text-h);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.site-nav a:hover {
+  background: var(--accent-bg);
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: left;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+
+/* Simple form and button styles for the app */
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="file"],
+select,
+textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px 12px;
+  margin: 6px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  box-sizing: border-box;
+  color: var(--text-h);
+}
+
+button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+img {
+  display: block;
+}
+
+.card-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.stat-card {
+  background: var(--surface);
+  padding: 12px;
+  border-radius: 10px;
+  min-width: 140px;
+  text-align: left;
+}
+
+.input-full {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.status-online {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 640px) {
+  .app-container {
+    padding: 12px;
+  }
+
+  .card-image {
+    height: 180px;
+    border-radius: 6px;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin: 12px 0;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .btn {
+    padding: 9px 12px;
+    font-size: 15px;
+  }
+}
+
+/* Layout utilities */
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.preview-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+.page-pad {
+  padding: 40px;
+}
+
+.hero-text {
+  max-width: 720px;
+  margin: 12px 0 20px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Improve spacing for interactive flow buttons on small screens */
+@media (max-width: 480px) {
+  .row {
+    gap: 8px;
+  }
+
+  .btn, .btn-outline {
+    padding: 10px 12px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 800px) {
+  .two-column {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .preview-image {
+    height: 180px;
+  }
+
+  .page-pad {
+    padding: 16px;
+  }
+}
+
+/* Responsive nav / menu */
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--text-h);
+  font-size: 20px;
+  line-height: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-dropdown {
+  display: none;
+  position: absolute;
+  right: 16px;
+  top: 58px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: var(--shadow);
+  z-index: 1200;
+  opacity: 0;
+  transform-origin: top right;
+  transform: translateY(-6px) scale(.98);
+  transition: opacity .12s ease, transform .12s ease;
+}
+
+.nav-dropdown.open {
+  display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.nav-dropdown a {
+  display: block;
+  padding: 8px 12px;
+  color: var(--text-h);
+}
+
+@media (max-width: 800px) {
+  .nav-inline {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .nav-dropdown {
+    right: 12px;
+    left: 12px;
+    top: 60px;
+  }
+}
+
+/* Confirmation modal for InvitationView */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1400;
+}
+
+.confirm-modal {
+  max-width: 420px;
+  width: 92%;
+  padding: 18px;
+  border-radius: 12px;
+}
+
+/* Interactive invite decorative hearts */
+.interactive-hearts {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  pointer-events: none;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+.interactive-hearts .heart {
+  display: inline-block;
+  transform-origin: center;
+  animation: floatUp 3s ease-in-out infinite;
+  font-size: 18px;
+  opacity: 0.9;
+}
+.interactive-hearts .heart:nth-child(2) { animation-delay: 0.3s; font-size: 20px; }
+.interactive-hearts .heart:nth-child(3) { animation-delay: 0.7s; font-size: 16px; }
+
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(1); opacity: 0.9; }
+  50% { transform: translateY(-8px) scale(1.08); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 0.9; }
+}
+
+/* Interactive card styling (romantic) */
+.interactive-card {
+  background: linear-gradient(180deg, rgba(255,240,245,0.6), rgba(255,250,255,0.4));
+  border: 1px solid rgba(255,200,220,0.6);
+}
+
+.interactive-card h2, .interactive-card h1 {
+  color: #c2185b;
+}
+
+/* Stats and action responsiveness */
+.stat-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.invite-wrapper {
+  min-height: 100vh;
+}
+
+@media (max-width: 480px) {
+  .btn { width: 100%; }
+}
+
+/* Ensure the NO button is easier to dodge on small screens by slightly reducing distance threshold */
