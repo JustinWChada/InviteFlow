@@ -8,16 +8,20 @@ import { getFirestore } from "firebase/firestore";
 
 import { getStorage } from "firebase/storage";
 
+// Read Firebase configuration from Vite environment variables.
+// For local development create a `.env` file with these values (see `.env.example`).
 const firebaseConfig = {
-  apiKey: "AIzaSyCgksnN0sCEgsbSNOkNDKN2qvr61XKCTkE",
-  authDomain: "inviteflow-796b5.firebaseapp.com",
-  projectId: "inviteflow-796b5",
-  storageBucket: "inviteflow-796b5.appspot.com",
-  // Correct storage bucket: use the .appspot.com domain
-  // If your Firebase console shows a different bucket name, replace this value.
-  messagingSenderId: "49475640006",
-  appId: "1:49475640006:web:be2070ca256071fcea15c7",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+if (!firebaseConfig.apiKey) {
+  console.warn('Firebase configuration is missing. Set VITE_FIREBASE_* environment variables (see .env.example).');
+}
 
 const app = initializeApp(firebaseConfig);
 
