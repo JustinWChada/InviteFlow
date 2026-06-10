@@ -747,7 +747,12 @@ export default function InteractiveInvite() {
       try {
         const q = query(collection(db, 'invitations'), where('slug', '==', slug));
         const snap = await getDocs(q);
-        if (snap.empty) { toast.error('Invitation not found'); setLoading(false); return; }
+        if (snap.empty) {
+          console.error('Interactive invite not found. slug=', slug, 'client projectId=', import.meta.env.VITE_FIREBASE_PROJECT_ID || '<not set>');
+          toast.error('Invitation not found');
+          setLoading(false);
+          return;
+        }
         const d = snap.docs[0];
         setInvitation({ id: d.id, ...d.data() });
       } catch { toast.error('Failed to load invitation'); }
@@ -797,7 +802,15 @@ export default function InteractiveInvite() {
 
   if (!invitation) return (
     <div style={{ minHeight:'100vh', background:'#f8f4f0', display:'flex', alignItems:'center', justifyContent:'center' }}>
-      <p style={{ color:'#888', fontWeight:700 }}>Invitation not found</p>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ color:'#888', fontWeight:700 }}>Invitation not found</p>
+        <div style={{ marginTop: 8, color: '#666' }}>
+          Debug: client Firebase project: <strong>{import.meta.env.VITE_FIREBASE_PROJECT_ID || '<not set>'}</strong>
+        </div>
+        <div style={{ marginTop: 6, color: '#666', fontSize: 13 }}>
+          If you created this invite from another browser or a different build, it may be stored in a different Firebase project.
+        </div>
+      </div>
     </div>
   );
 
