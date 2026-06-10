@@ -172,12 +172,6 @@ function InvitationView() {
         ...document.data(),
       };
 
-      // If this invitation is interactive, redirect to the interactive flow page
-      if (invitationData.invitationType === 'interactive' || invitationData.flow) {
-        navigate(`/interactive/${slug}`);
-        return;
-      }
-
       setInvitation(invitationData);
 
       // if already responded (accepted), show details immediately
