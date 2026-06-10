@@ -75,13 +75,28 @@ function CreateInvitation() {
   ];
 
   const defaultSuccessMessages = {
-    whatsapp: "Thanks for RSVPing — we'll send you details shortly via WhatsApp.",
-    instagram: "Thanks! We'll DM you on Instagram with more info.",
-    secret_message: "Here's a little secret just for you: you're invited! Reply when you can.",
-    secret_location: "Thanks — we'll share the exact location shortly.",
+    whatsapp: "Hey! Just wanted to say thanks. Looking forward to seeing you at the event! Let me know if there are any changes.",
+    instagram: "Thanks! Looking forward to seeing you at the event!",
+    secret_message: "Here's a little secret just for you: you're invited!",
+    secret_location: "Thanks - I can`t wait! Share the secret location with me.",
   };
 
   const [messageTouched, setMessageTouched] = useState(false);
+  const [showEditSuccessMessage, setShowEditSuccessMessage] = useState(false);
+
+  // Must be defined before currentTheme uses it
+  const getThemeForEventType = (eventType) => {
+    switch (eventType) {
+      case 'Date Night': return 'romantic';
+      case 'Proposal':   return 'proposal';
+      case 'Birthday':   return 'birthday';
+      case 'Wedding':    return 'wedding';
+      case 'Graduation': return 'graduation';
+      case 'Party':    return 'party';
+      case 'Church Event':    return 'church';
+      default:           return 'romantic';
+    }
+  };
 
   const currentTheme = themes[getThemeForEventType(formData.eventType)];
 
@@ -94,6 +109,24 @@ function CreateInvitation() {
 
 
   const updateSuccessAction = (type) => {
+    // Map secret choices to whatsapp + secret flag
+    if (type === 'secret_message' || type === 'secret_location') {
+      const kind = type === 'secret_message' ? 'message' : 'location';
+      setFormData((prev) => ({
+        ...prev,
+        successAction: {
+          type: 'whatsapp',
+          config: {
+            countryCode: prev.successAction?.config?.countryCode || '+263',
+            phone: prev.successAction?.config?.phone || '',
+            secret: true,
+            secretKind: kind,
+          },
+        },
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       successAction: {
@@ -101,6 +134,7 @@ function CreateInvitation() {
         config: {},
       },
     }));
+    setShowEditSuccessMessage(false);
   };
 
   const updateSuccessConfig = (field, value) => {
@@ -146,17 +180,23 @@ function CreateInvitation() {
     }
   };
 
-  // When the success action type changes, prefill the config.message if empty
+  // When the success action type or secret kind changes, prefill the config.message if empty
   useEffect(() => {
-    const type = formData.successAction?.type;
+    const action = formData.successAction || {};
+    if (!action) return;
 
-    if (!type) return;
+    const cfg = action.config || {};
 
-    const currentMsg = formData.successAction?.config?.message;
+    // If this is a secret config, pick secret defaults
+    let key = action.type;
+    if (cfg.secret && cfg.secretKind) {
+      key = cfg.secretKind === 'location' ? 'secret_location' : 'secret_message';
+    }
+
+    const currentMsg = cfg.message;
 
     if (!currentMsg) {
-      const dm = defaultSuccessMessages[type] || "";
-
+      const dm = defaultSuccessMessages[key] || "";
       setFormData((prev) => ({
         ...prev,
         successAction: {
@@ -168,7 +208,7 @@ function CreateInvitation() {
         },
       }));
     }
-  }, [formData.successAction?.type]);
+  }, [formData.successAction?.type, formData.successAction?.config?.secretKind]);
 
   // Interactive questions removed — invitations are progressive reveals of core details.
 
@@ -180,21 +220,6 @@ function CreateInvitation() {
 
     setFormData((prev) => ({ ...prev, message: dm }));
   }, [formData.eventType, messageTouched]);
-
-  const getThemeForEventType = (eventType) => {
-    switch (eventType) {
-      case 'Date Night':
-        return 'romantic';
-      case 'Proposal':
-        return 'proposal';
-      case 'Birthday':
-        return 'birthday';
-      case 'Wedding':
-        return 'wedding';
-      default:
-        return 'romantic';
-    }
-  };
 
   const handleCreateInvitation = async () => {
     // image state is managed at component scope: `selectedImage`, `imagePreview`
@@ -384,7 +409,7 @@ function CreateInvitation() {
 
           <label>Preferred Food (one per field)</label>
           {(formData.foods || []).map((f, idx) => (
-            <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <div key={idx} className="input-row" style={{ marginBottom: 8 }}>
               <input
                 type="text"
                 placeholder={`Food item ${idx + 1}`}
@@ -394,7 +419,6 @@ function CreateInvitation() {
                   next[idx] = e.target.value;
                   updateField('foods', next);
                 }}
-                style={{ flex: 1 }}
               />
               <button type="button" className="btn btn-outline" onClick={() => {
                 const next = [...(formData.foods || [])];
@@ -428,7 +452,7 @@ function CreateInvitation() {
           <h2>Success Action</h2>
 
           <select
-            value={formData.successAction.type}
+            value={formData.successAction?.config?.secret ? (formData.successAction?.config?.secretKind === 'location' ? 'secret_location' : 'secret_message') : (formData.successAction?.type || 'whatsapp')}
             onChange={(e) => updateSuccessAction(e.target.value)}
           >
             <option value="whatsapp">WhatsApp</option>
@@ -443,48 +467,88 @@ function CreateInvitation() {
           <br />
           <br />
 
-          {formData.successAction.type === "whatsapp" && (
-            <>
-              <label htmlFor="wa-country">Country</label>
-              <select
-                id="wa-country"
-                value={formData.successAction?.config?.countryCode || "+263"}
-                onChange={(e) => updateSuccessConfig("countryCode", e.target.value)}
-              >
-                {countryCodes.map((c) => (
-                  <option key={c.code} value={c.code}>{c.name}</option>
-                ))}
-              </select>
+          {
+            // Treat underlying whatsapp as the channel for normal and secret flows
+            formData.successAction?.type === 'whatsapp' && (
+              (() => {
+                const cfg = formData.successAction?.config || {};
+                const isSecret = !!cfg.secret;
 
-              <label htmlFor="wa-phone">Phone Number</label>
-              <input
-                id="wa-phone"
-                type="text"
-                placeholder="Phone Number"
-                onChange={(e) => updateSuccessConfig("phone", e.target.value)}
-                onBlur={() => {
-                  const cc = formData.successAction?.config?.countryCode || "+263";
-                  const raw = formData.successAction?.config?.phone || "";
-                  const norm = normalizePhone(cc, raw);
-                  updateSuccessConfig("phone", norm);
-                }}
-                value={formData.successAction?.config?.phone || ""}
-              />
+                return (
+                  <>
+                    <label htmlFor="wa-country">Country</label>
+                    <select
+                      id="wa-country"
+                      value={cfg.countryCode || "+263"}
+                      onChange={(e) => updateSuccessConfig("countryCode", e.target.value)}
+                    >
+                      {countryCodes.map((c) => (
+                        <option key={c.code} value={c.code}>{c.name}</option>
+                      ))}
+                    </select>
 
-              <br />
-              <br />
+                    <label htmlFor="wa-phone">Phone Number</label>
+                    <input
+                      id="wa-phone"
+                      type="text"
+                      placeholder="Phone Number"
+                      onChange={(e) => updateSuccessConfig("phone", e.target.value)}
+                      onBlur={() => {
+                        const cc = formData.successAction?.config?.countryCode || "+263";
+                        const raw = formData.successAction?.config?.phone || "";
+                        const norm = normalizePhone(cc, raw);
+                        updateSuccessConfig("phone", norm);
+                      }}
+                      value={cfg.phone || ""}
+                    />
 
-              <textarea
-                rows={4}
-                placeholder="WhatsApp Message"
-                value={formData.successAction?.config?.message || ""}
-                onChange={(e) => updateSuccessConfig("message", e.target.value)}
-              />
-              <div style={{ marginTop: 8 }}>
-                <button type="button" className="btn btn-outline" onClick={() => updateSuccessConfig('message', defaultSuccessMessages.whatsapp)}>Use default</button>
-              </div>
-            </>
-          )}
+                    <br />
+                    <br />
+
+                    {/* Secret kinds have their own inputs */}
+                    {isSecret && cfg.secretKind === 'message' && (
+                      <>
+                        <label>Secret Message (this will be sent to host on accept)</label>
+                        <textarea rows={4} placeholder="Secret message" value={cfg.secretMessage || cfg.message || ''} onChange={(e) => updateSuccessConfig('secretMessage', e.target.value)} />
+                        <div style={{ marginTop: 8 }}>
+                          <button type="button" className="btn btn-outline" onClick={() => updateSuccessConfig('secretMessage', defaultSuccessMessages.secret_message)}>Use default</button>
+                        </div>
+                      </>
+                    )}
+
+                    {isSecret && cfg.secretKind === 'location' && (
+                      <>
+                        <label>Secret Location</label>
+                        <input type="text" placeholder="Location Name" value={cfg.name || ''} onChange={(e) => updateSuccessConfig('name', e.target.value)} />
+                        <br />
+                        <br />
+                        <input type="text" placeholder="Google Maps URL" value={cfg.mapLink || ''} onChange={(e) => updateSuccessConfig('mapLink', e.target.value)} />
+                        <div style={{ marginTop: 8 }}>
+                          <button type="button" className="btn btn-outline" onClick={() => updateSuccessConfig('mapLink', '')}>Clear</button>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Message editing toggle for non-secret or optional override */}
+                    <div style={{ marginTop: 8 }}>
+                      <label style={{ marginRight: 12 }}>
+                        <input type="checkbox" checked={showEditSuccessMessage} onChange={(e) => setShowEditSuccessMessage(e.target.checked)} /> Edit message
+                      </label>
+                    </div>
+
+                    {showEditSuccessMessage && (
+                      <>
+                        <textarea rows={4} placeholder="WhatsApp Message (optional)" value={cfg.message || ''} onChange={(e) => updateSuccessConfig('message', e.target.value)} />
+                        <div style={{ marginTop: 8 }}>
+                          <button type="button" className="btn btn-outline" onClick={() => updateSuccessConfig('message', defaultSuccessMessages.whatsapp)}>Use default</button>
+                        </div>
+                      </>
+                    )}
+                  </>
+                );
+              })()
+            )
+          }
 
           {formData.successAction.type === "instagram" && (
             <>
@@ -501,44 +565,6 @@ function CreateInvitation() {
               <textarea
                 rows={3}
                 placeholder="Instagram DM message"
-                value={formData.successAction?.config?.message || ""}
-                onChange={(e) => updateSuccessConfig("message", e.target.value)}
-              />
-            </>
-          )}
-
-          {formData.successAction.type === "secret_message" && (
-            <textarea
-              rows={4}
-              placeholder="Secret Message"
-              value={formData.successAction?.config?.message || ""}
-              onChange={(e) => updateSuccessConfig("message", e.target.value)}
-            />
-          )}
-
-          {formData.successAction.type === "secret_location" && (
-            <>
-              <input
-                type="text"
-                placeholder="Location Name"
-                value={formData.successAction?.config?.name || ""}
-                onChange={(e) => updateSuccessConfig("name", e.target.value)}
-              />
-
-              <br />
-              <br />
-
-              <input
-                type="text"
-                placeholder="Google Maps URL"
-                value={formData.successAction?.config?.mapLink || ""}
-                onChange={(e) => updateSuccessConfig("mapLink", e.target.value)}
-              />
-              <br />
-              <br />
-              <textarea
-                rows={3}
-                placeholder="Message to send after RSVP"
                 value={formData.successAction?.config?.message || ""}
                 onChange={(e) => updateSuccessConfig("message", e.target.value)}
               />

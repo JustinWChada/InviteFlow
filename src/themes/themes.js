@@ -40,6 +40,36 @@ export const themes = {
     secondary: "#fdfdfd",
     accent: "#b2bec3",
   },
+
+  graduation: {
+    id: "graduation",
+    name: "Graduation Celebration",
+    icon: "🎓",
+    coverImage: "/images/graduation.jpg",
+    primary: "#ff6b6b",
+    secondary: "#ffe6e6",
+    accent: "#ff8e8e",
+  },
+
+  party: {
+    id: "party",
+    name: "Party Fun",
+    icon: "🎉",
+    coverImage: "/images/party.jpg",
+    primary: "#ff6b6b",
+    secondary: "#ffe6e6",
+    accent: "#ff8e8e",
+  },
+
+  church: {
+    id: "church",
+    name: "Church Event",
+    icon: "⛪",
+    coverImage: "/images/church.jpg",
+    primary: "#2d3436",
+    secondary: "#fdfdfd",
+    accent: "#b2bec3",
+  }
 };
 
 export const eventTypes = [

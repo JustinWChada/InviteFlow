@@ -208,16 +208,14 @@ function InvitationView() {
 
   const getThemeForEventType = (eventType, themeFallback) => {
     switch (eventType) {
-      case 'Date Night':
-        return 'romantic';
-      case 'Proposal':
-        return 'proposal';
-      case 'Birthday':
-        return 'birthday';
-      case 'Wedding':
-        return 'wedding';
-      default:
-        return themeFallback || 'romantic';
+      case 'Date Night': return 'romantic';
+      case 'Proposal':   return 'proposal';
+      case 'Birthday':   return 'birthday';
+      case 'Wedding':    return 'wedding';
+      case 'Graduation': return 'graduation';
+      case 'Party':    return 'party';
+      case 'Church Event':    return 'church';
+      default:           return themeFallback || 'romantic';
     }
   };
 

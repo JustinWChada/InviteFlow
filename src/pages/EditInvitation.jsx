@@ -22,6 +22,7 @@ function EditInvitation() {
   const [imagePreview, setImagePreview] = useState("");
 
   const [formData, setFormData] = useState(null);
+  const [showEditSuccessMessage, setShowEditSuccessMessage] = useState(false);
 
   const countryCodes = [
     { code: "+263", name: "Zimbabwe (+263)" },
@@ -107,6 +108,41 @@ function EditInvitation() {
 
   const updateField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updateSuccessActionEdit = (type) => {
+    if (type === 'secret_message' || type === 'secret_location') {
+      const kind = type === 'secret_message' ? 'message' : 'location';
+      setFormData((prev) => ({
+        ...prev,
+        successAction: {
+          type: 'whatsapp',
+          config: {
+            countryCode: prev.successAction?.config?.countryCode || '+263',
+            phone: prev.successAction?.config?.phone || '',
+            secret: true,
+            secretKind: kind,
+          },
+        },
+      }));
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, successAction: { type, config: {} } }));
+    setShowEditSuccessMessage(false);
+  };
+
+  const updateSuccessConfigEdit = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      successAction: {
+        ...prev.successAction,
+        config: {
+          ...prev.successAction.config,
+          [field]: value,
+        },
+      },
+    }));
   };
 
   const handleSave = async () => {
@@ -220,12 +256,12 @@ function EditInvitation() {
 
         <label>Preferred Food (one per field)</label>
         {(formData.foods || []).map((f, idx) => (
-          <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <div key={idx} className="input-row" style={{ marginBottom: 8 }}>
             <input type="text" placeholder={`Food item ${idx + 1}`} value={f} onChange={(e) => {
               const next = [...(formData.foods || [])];
               next[idx] = e.target.value;
               updateField('foods', next);
-            }} style={{ flex: 1 }} />
+            }} />
             <button className="btn btn-outline" onClick={() => {
               const next = [...(formData.foods || [])];
               next.splice(idx, 1);
@@ -240,7 +276,7 @@ function EditInvitation() {
         <h2>Success Action</h2>
 
         <label htmlFor="edit-success-type">Type</label>
-        <select id="edit-success-type" value={formData.successAction?.type || 'whatsapp'} onChange={(e) => updateField('successAction', { type: e.target.value, config: {} })}>
+        <select id="edit-success-type" value={formData.successAction?.config?.secret ? (formData.successAction?.config?.secretKind === 'location' ? 'secret_location' : 'secret_message') : (formData.successAction?.type || 'whatsapp')} onChange={(e) => updateSuccessActionEdit(e.target.value)}>
           <option value="whatsapp">WhatsApp</option>
           <option value="instagram">Instagram</option>
           <option value="secret_message">Secret Message</option>
@@ -249,28 +285,67 @@ function EditInvitation() {
 
         {formData.successAction?.type === 'whatsapp' && (
           <>
-            <label htmlFor="edit-wa-country">Country</label>
-            <select id="edit-wa-country" value={formData.successAction?.config?.countryCode || '+263'} onChange={(e) => updateField('successAction', { ...formData.successAction, config: { ...formData.successAction.config, countryCode: e.target.value } })}>
-              {countryCodes.map(c => (
-                <option key={c.code} value={c.code}>{c.name}</option>
-              ))}
-            </select>
+            {(() => {
+              const cfg = formData.successAction?.config || {};
+              const isSecret = !!cfg.secret;
 
-            <label htmlFor="edit-wa-phone">Phone</label>
-            <input id="edit-wa-phone" type="text" placeholder="Phone Number" value={formData.successAction?.config?.phone || ''} onChange={(e) => updateField('successAction', { ...formData.successAction, config: { ...formData.successAction.config, phone: e.target.value } })} onBlur={() => {
-              const cc = formData.successAction?.config?.countryCode || '+263';
-              const raw = formData.successAction?.config?.phone || '';
-              const norm = normalizePhone(cc, raw);
-              updateField('successAction', { ...formData.successAction, config: { ...formData.successAction.config, phone: norm } });
-            }} />
+              return (
+                <>
+                  <label htmlFor="edit-wa-country">Country</label>
+                  <select id="edit-wa-country" value={cfg.countryCode || '+263'} onChange={(e) => updateSuccessConfigEdit('countryCode', e.target.value)}>
+                    {countryCodes.map(c => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
 
-            <br />
-            <br />
+                  <label htmlFor="edit-wa-phone">Phone</label>
+                  <input id="edit-wa-phone" type="text" placeholder="Phone Number" value={cfg.phone || ''} onChange={(e) => updateSuccessConfigEdit('phone', e.target.value)} onBlur={() => {
+                    const cc = cfg.countryCode || '+263';
+                    const raw = cfg.phone || '';
+                    const norm = normalizePhone(cc, raw);
+                    updateSuccessConfigEdit('phone', norm);
+                  }} />
 
-            <textarea rows={3} placeholder="WhatsApp Message" value={formData.successAction?.config?.message || ''} onChange={(e) => updateField('successAction', { ...formData.successAction, config: { ...formData.successAction.config, message: e.target.value } })} />
-            <div style={{ marginTop: 8 }}>
-              <button type="button" className="btn btn-outline" onClick={() => updateField('successAction', { ...formData.successAction, config: { ...formData.successAction.config, message: "Thanks for RSVPing — we'll send you details shortly via WhatsApp." } })}>Use default</button>
-            </div>
+                  <br />
+                  <br />
+
+                  {isSecret && cfg.secretKind === 'message' && (
+                    <>
+                      <label>Secret Message (sent to host)</label>
+                      <textarea rows={3} placeholder="Secret message" value={cfg.secretMessage || cfg.message || ''} onChange={(e) => updateSuccessConfigEdit('secretMessage', e.target.value)} />
+                      <div style={{ marginTop: 8 }}>
+                        <button type="button" className="btn btn-outline" onClick={() => updateSuccessConfigEdit('secretMessage', 'Here is a secret just for you!')}>Use default</button>
+                      </div>
+                    </>
+                  )}
+
+                  {isSecret && cfg.secretKind === 'location' && (
+                    <>
+                      <label>Secret Location</label>
+                      <input type="text" placeholder="Location Name" value={cfg.name || ''} onChange={(e) => updateSuccessConfigEdit('name', e.target.value)} />
+                      <br />
+                      <br />
+                      <input type="text" placeholder="Google Maps URL" value={cfg.mapLink || ''} onChange={(e) => updateSuccessConfigEdit('mapLink', e.target.value)} />
+                    </>
+                  )}
+
+                  <div style={{ marginTop: 8 }}>
+                    <label style={{ marginRight: 12 }}>
+                      <input type="checkbox" checked={showEditSuccessMessage} onChange={(e) => setShowEditSuccessMessage(e.target.checked)} /> Edit message
+                    </label>
+                  </div>
+
+                  {showEditSuccessMessage && (
+                    <>
+                      <textarea rows={3} placeholder="WhatsApp Message" value={cfg.message || ''} onChange={(e) => updateSuccessConfigEdit('message', e.target.value)} />
+                      <div style={{ marginTop: 8 }}>
+                        <button type="button" className="btn btn-outline" onClick={() => updateSuccessConfigEdit('message', "Thanks for RSVPing — we'll send you details shortly via WhatsApp.")}>Use default</button>
+                      </div>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </>
         )}
 

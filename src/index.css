@@ -278,6 +278,46 @@ img {
   border: 1px solid var(--border);
 }
 
+/* Rows with an input and a compact action button */
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.input-row input,
+.input-row textarea {
+  flex: 1 1 auto;
+  width: auto; /* allow flex to control width */
+}
+.input-row .btn,
+.input-row .btn-outline {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  min-width: 44px;
+}
+
+@media (max-width: 480px) {
+  .input-row .btn,
+  .input-row .btn-outline {
+    padding: 6px 8px;
+    min-width: 40px;
+  }
+
+  /* On very small screens make the action button expand to fill
+     the remaining space so it's easier to tap. Inputs stay usable
+     but have a slightly smaller flex share. */
+  .input-row input,
+  .input-row textarea {
+    flex: 2 1 auto;
+    min-width: 0; /* allow flexbox shrinking */
+  }
+
+  .input-row .btn,
+  .input-row .btn-outline {
+    flex: 1 1 auto;
+  }
+}
+
 .status-online {
   color: var(--success);
   font-weight: 700;
@@ -371,6 +411,77 @@ img {
 
   .page-pad {
     padding: 16px;
+  }
+}
+
+/* Footer styles */
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(0,0,0,0.01), transparent);
+  padding: 22px 12px;
+  margin-top: 36px;
+}
+.footer-inner {
+  max-width: 1126px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  color: var(--muted);
+}
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.footer-brand {
+  font-weight: 700;
+  color: var(--text-h);
+  font-size: 16px;
+}
+.footer-built {
+  font-size: 14px;
+  color: var(--text);
+}
+.footer-right {
+  text-align: right;
+}
+.footer-title {
+  font-weight: 700;
+  color: var(--text-h);
+  margin-bottom: 6px;
+}
+.footer-support {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.footer-link {
+  color: var(--accent);
+  text-decoration: none;
+  background: transparent;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+.footer-link:hover {
+  background: var(--accent-bg);
+}
+
+@media (max-width: 720px) {
+  .footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .footer-right {
+    width: 100%;
+    margin-top: 8px;
+  }
+  .footer-support {
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }
 
