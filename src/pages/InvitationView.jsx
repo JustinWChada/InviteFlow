@@ -206,7 +206,22 @@ function InvitationView() {
     return <div className="app-container">{error}</div>;
   }
 
-  const currentTheme = themes[invitation.theme];
+  const getThemeForEventType = (eventType, themeFallback) => {
+    switch (eventType) {
+      case 'Date Night':
+        return 'romantic';
+      case 'Proposal':
+        return 'proposal';
+      case 'Birthday':
+        return 'birthday';
+      case 'Wedding':
+        return 'wedding';
+      default:
+        return themeFallback || 'romantic';
+    }
+  };
+
+  const currentTheme = themes[getThemeForEventType(invitation.eventType, invitation.theme)];
 
   return (
     <div className="invite-wrapper" style={{ background: currentTheme.secondary }}>
@@ -240,7 +255,7 @@ function InvitationView() {
 
                 <p>📍 {invitation.location}</p>
 
-                <p>🍽️ {invitation.food || 'No preference provided'}</p>
+                <p>🍽️ {(invitation.foods && invitation.foods.length) ? invitation.foods.join(', ') : (invitation.food || 'No preference provided')}</p>
 
                 <hr />
               </>

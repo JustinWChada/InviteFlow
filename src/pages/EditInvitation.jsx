@@ -87,7 +87,7 @@ function EditInvitation() {
           location: inv.location || "",
           message: inv.message || "",
           coverImageUrl: inv.coverImageUrl || "",
-          questions: inv.questions || [],
+          foods: inv.foods || (inv.food ? [inv.food] : ['']),
           successAction: inv.successAction || { type: "whatsapp", config: {} },
           id: inv.id,
           slug: inv.slug,
@@ -139,10 +139,10 @@ function EditInvitation() {
         date: formData.date,
         time: formData.time,
         location: formData.location,
-        food: formData.food || '',
+        foods: formData.foods || [],
         message: formData.message,
         coverImageUrl,
-        questions: formData.questions || [],
+        // questions removed; progressive reveal uses core fields
         successAction: formData.successAction || {},
       };
 
@@ -159,22 +159,7 @@ function EditInvitation() {
     }
   };
 
-  // Simple questions editor
-  const addQuestion = () => {
-    setFormData((prev) => ({ ...prev, questions: [...(prev.questions || []), { question: "", options: [] }] }));
-  };
-
-  const updateQuestion = (index, field, value) => {
-    const q = [...formData.questions];
-    q[index] = { ...q[index], [field]: value };
-    setFormData((prev) => ({ ...prev, questions: q }));
-  };
-
-  const removeQuestion = (index) => {
-    const q = [...formData.questions];
-    q.splice(index, 1);
-    setFormData((prev) => ({ ...prev, questions: q }));
-  };
+  // Interactive questions removed
 
   return (
     <div className="app-container">
@@ -207,15 +192,7 @@ function EditInvitation() {
         <br />
         <br />
 
-        <label htmlFor="edit-theme">Theme</label>
-        <select id="edit-theme" value={formData.theme} onChange={(e) => updateField("theme", e.target.value)}>
-          {Object.values(themes).map((theme) => (
-            <option key={theme.id} value={theme.id}>{theme.name}</option>
-          ))}
-        </select>
-
-        <br />
-        <br />
+        {/* Theme is derived from event type; editing theme directly removed to simplify form */}
 
         <label htmlFor="edit-date">Date</label>
         <input id="edit-date" type="date" min={minDate} value={formData.date} onChange={(e) => updateField("date", e.target.value)} />
@@ -241,8 +218,22 @@ function EditInvitation() {
         <br />
         <br />
 
-        <label htmlFor="edit-food">Preferred Food</label>
-        <input id="edit-food" type="text" placeholder="Type of food the recipient prefers" value={formData.food || ''} onChange={(e) => updateField('food', e.target.value)} />
+        <label>Preferred Food (one per field)</label>
+        {(formData.foods || []).map((f, idx) => (
+          <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <input type="text" placeholder={`Food item ${idx + 1}`} value={f} onChange={(e) => {
+              const next = [...(formData.foods || [])];
+              next[idx] = e.target.value;
+              updateField('foods', next);
+            }} style={{ flex: 1 }} />
+            <button className="btn btn-outline" onClick={() => {
+              const next = [...(formData.foods || [])];
+              next.splice(idx, 1);
+              updateField('foods', next.length ? next : ['']);
+            }}>Remove</button>
+          </div>
+        ))}
+        <button className="btn btn-outline" onClick={() => updateField('foods', [...(formData.foods || []), ''])}>Add food</button>
 
         <hr />
 
@@ -285,21 +276,7 @@ function EditInvitation() {
 
         <hr />
 
-        <h2>Interactive Questions</h2>
-
-        {(formData.questions || []).map((q, i) => (
-          <div key={i} style={{ marginBottom: 12 }}>
-            <input type="text" placeholder="Question" value={q.question} onChange={(e) => updateQuestion(i, "question", e.target.value)} />
-            <br />
-            <input type="text" placeholder="Options (comma separated)" value={(q.options || []).join(",")} onChange={(e) => updateQuestion(i, "options", e.target.value.split(",").map(s => s.trim()))} />
-            <br />
-            <button className="btn btn-outline" onClick={() => removeQuestion(i)}>Remove</button>
-          </div>
-        ))}
-
-        <button className="btn btn-outline" onClick={addQuestion}>Add Question</button>
-
-        <hr />
+        {/* Interactive questions removed - invitation reveals core details progressively */}
 
         <button className="btn" onClick={handleSave} disabled={loading}>{loading ? "Saving..." : "Save Changes"}</button>
       </div>

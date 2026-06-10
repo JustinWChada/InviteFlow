@@ -47,15 +47,30 @@ export default function InteractiveInvite() {
   if (!invitation) return <div className="app-container">Invitation not found</div>;
 
   const flow = invitation.flow || [
-    { type: 'question' },
-    { type: 'datePicker' },
-    { type: 'timePicker' },
-    { type: 'moodSelector' },
-    { type: 'activitySelector' },
+    { type: 'date' },
+    { type: 'time' },
+    { type: 'location' },
+    { type: 'foods' },
+    { type: 'message' },
     { type: 'finalReveal' },
   ];
 
-  const currentTheme = themes[invitation.theme];
+  const getThemeForEventType = (eventType) => {
+    switch (eventType) {
+      case 'Date Night':
+        return 'romantic';
+      case 'Proposal':
+        return 'proposal';
+      case 'Birthday':
+        return 'birthday';
+      case 'Wedding':
+        return 'wedding';
+      default:
+        return 'romantic';
+    }
+  };
+
+  const currentTheme = themes[getThemeForEventType(invitation.eventType || invitation.theme)];
 
   const next = () => setStep((s) => Math.min(flow.length - 1, s + 1));
   const prev = () => setStep((s) => Math.max(0, s - 1));
@@ -108,85 +123,67 @@ export default function InteractiveInvite() {
     if (!node) return null;
 
     switch (node.type) {
-      case 'question':
+      case 'date':
         return (
           <div>
-            <h2>Will you go on a date with me?</h2>
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-              <button className="btn" onClick={() => setShowConfirm(true)}>Yes</button>
-              <button className="btn btn-outline" onClick={() => {
-                submitResponse(invitation, 'declined');
-                toast('Maybe next time');
-              }}>No</button>
+            <h2>Date</h2>
+            <p style={{ marginTop: 12 }}>{invitation.date || 'Date not set'}</p>
+            <div style={{ marginTop: 12 }}>
+              <button className="btn" onClick={next}>Reveal Time</button>
             </div>
           </div>
         );
 
-      case 'datePicker':
+      case 'time':
         return (
           <div>
-            <h2>When are you free?</h2>
-            <label>Date</label>
-            <input type="date" value={answers.date || ''} onChange={(e) => setAnswer('date', e.target.value)} />
-            <label>Time</label>
-            <input type="time" value={answers.time || ''} onChange={(e) => setAnswer('time', e.target.value)} />
+            <h2>Time</h2>
+            <p style={{ marginTop: 12 }}>{invitation.time || 'Time not set'}</p>
             <div style={{ marginTop: 12 }}>
-              <button className="btn" onClick={next}>Select Date</button>
+              <button className="btn" onClick={next}>Reveal Location</button>
             </div>
           </div>
         );
 
-      case 'timePicker':
+      case 'location':
         return (
           <div>
-            <h2>Pick a time</h2>
-            <input type="time" value={answers.time || ''} onChange={(e) => setAnswer('time', e.target.value)} />
+            <h2>Location</h2>
+            <p style={{ marginTop: 12 }}>{invitation.location || 'Location not set'}</p>
             <div style={{ marginTop: 12 }}>
-              <button className="btn" onClick={next}>Next</button>
+              <button className="btn" onClick={next}>Reveal Food</button>
             </div>
           </div>
         );
 
-      case 'moodSelector':
+      case 'foods':
         return (
           <div>
-            <h2>What are we feelin'?</h2>
-            <div className="row" style={{ marginTop: 12 }}>
-              {['Food', 'Burgers', 'Movies', 'Activities'].map((m) => (
-                <button
-                  key={m}
-                  className={answers.mood === m ? 'btn selected' : 'btn btn-outline'}
-                  aria-pressed={answers.mood === m}
-                  onClick={() => setAnswer('mood', m)}
-                >
-                  {m}
-                </button>
-              ))}
+            <h2>Food</h2>
+            <div style={{ marginTop: 12 }}>
+              {(invitation.foods || invitation.food || []).length ? (
+                <ul>
+                  {(invitation.foods || (invitation.food ? [invitation.food] : [])).map((f, i) => (
+                    <li key={i}>{f}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No food preferences listed</p>
+              )}
             </div>
             <div style={{ marginTop: 12 }}>
-              <button className="btn" onClick={next}>Sounds Good</button>
+              <button className="btn" onClick={next}>Reveal Message</button>
             </div>
           </div>
         );
 
-      case 'activitySelector':
+      case 'message':
         return (
           <div>
-            <h2>What's your vibe?</h2>
-            <div className="row" style={{ marginTop: 12 }}>
-              {['Coffee', 'Walking', 'Food', 'Shopping', 'Entertainment'].map((a) => (
-                <button
-                  key={a}
-                  className={answers.activity === a ? 'btn selected' : 'btn btn-outline'}
-                  aria-pressed={answers.activity === a}
-                  onClick={() => setAnswer('activity', a)}
-                >
-                  {a}
-                </button>
-              ))}
-            </div>
+            <h2>Message</h2>
+            <p style={{ marginTop: 12 }}>{invitation.message || ''}</p>
             <div style={{ marginTop: 12 }}>
-              <button className="btn" onClick={next}>Sounds Like A Plan</button>
+              <button className="btn" onClick={next}>Reveal & RSVP</button>
             </div>
           </div>
         );
@@ -194,13 +191,13 @@ export default function InteractiveInvite() {
       case 'finalReveal':
         return (
           <div>
-            <h2>I got you ❤️</h2>
-            <p>Be ready for...</p>
+            <h2>Full details</h2>
             <div style={{ marginTop: 12 }}>
-              <p>📅 {answers.date || invitation.date || 'Date'}</p>
-              <p>⏰ {answers.time || invitation.time || 'Time'}</p>
-              <p>🎯 {answers.activity || invitation.activity || 'Activity'}</p>
-              <p>💭 {answers.mood || invitation.mood || 'Mood'}</p>
+              <p>📅 {invitation.date || 'Date'}</p>
+              <p>⏰ {invitation.time || 'Time'}</p>
+              <p>📍 {invitation.location || 'Location'}</p>
+              <p>🍽️ {(invitation.foods || (invitation.food ? [invitation.food] : [])).join(', ') || 'Food'}</p>
+              <p style={{ marginTop: 8 }}>{invitation.message || ''}</p>
             </div>
             <div style={{ marginTop: 12 }}>
               <button className="btn" onClick={() => setShowConfirm(true)}>Accept</button>

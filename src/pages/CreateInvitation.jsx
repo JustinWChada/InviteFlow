@@ -24,21 +24,18 @@ function CreateInvitation() {
   const [formData, setFormData] = useState({
     recipientName: "",
     creatorName: "",
-
     eventType: "Date Night",
-
-    theme: "romantic",
-
     date: "",
     time: "",
     location: "",
 
     message: "",
-    food: "",
+    foods: [""],
 
     coverImageSource: "default",
 
-    invitationType: "classic",
+    // invitations are always interactive (progressive reveal)
+    invitationType: "interactive",
     flow: null,
 
     successAction: {
@@ -86,7 +83,7 @@ function CreateInvitation() {
 
   const [messageTouched, setMessageTouched] = useState(false);
 
-  const currentTheme = themes[formData.theme];
+  const currentTheme = themes[getThemeForEventType(formData.eventType)];
 
   const updateField = (field, value) => {
     setFormData((prev) => ({
@@ -173,22 +170,7 @@ function CreateInvitation() {
     }
   }, [formData.successAction?.type]);
 
-  // Questions editor helpers (same shape as EditInvitation)
-  const addQuestion = () => {
-    setFormData((prev) => ({ ...prev, questions: [...(prev.questions || []), { question: "", options: [] }] }));
-  };
-
-  const updateQuestion = (index, field, value) => {
-    const q = [...(formData.questions || [])];
-    q[index] = { ...q[index], [field]: value };
-    setFormData((prev) => ({ ...prev, questions: q }));
-  };
-
-  const removeQuestion = (index) => {
-    const q = [...(formData.questions || [])];
-    q.splice(index, 1);
-    setFormData((prev) => ({ ...prev, questions: q }));
-  };
+  // Interactive questions removed — invitations are progressive reveals of core details.
 
   // Prefill invitation message when event type changes, unless user edited it
   useEffect(() => {
@@ -198,6 +180,21 @@ function CreateInvitation() {
 
     setFormData((prev) => ({ ...prev, message: dm }));
   }, [formData.eventType, messageTouched]);
+
+  const getThemeForEventType = (eventType) => {
+    switch (eventType) {
+      case 'Date Night':
+        return 'romantic';
+      case 'Proposal':
+        return 'proposal';
+      case 'Birthday':
+        return 'birthday';
+      case 'Wedding':
+        return 'wedding';
+      default:
+        return 'romantic';
+    }
+  };
 
   const handleCreateInvitation = async () => {
     // image state is managed at component scope: `selectedImage`, `imagePreview`
@@ -242,17 +239,19 @@ function CreateInvitation() {
         coverImageUrl,
       };
 
-      // if interactive mode, ensure a default flow is set
-      if (formData.invitationType === 'interactive') {
-        payload.invitationType = 'interactive';
-        payload.flow = formData.flow || [
-          { type: 'question' },
-          { type: 'datePicker' },
-          { type: 'moodSelector' },
-          { type: 'activitySelector' },
-          { type: 'finalReveal' },
-        ];
-      }
+      // Always use interactive progressive reveal flow
+      payload.invitationType = 'interactive';
+      payload.flow = formData.flow || [
+        { type: 'date' },
+        { type: 'time' },
+        { type: 'location' },
+        { type: 'foods' },
+        { type: 'message' },
+        { type: 'finalReveal' },
+      ];
+
+      // map foods array into storage-friendly field
+      payload.foods = formData.foods || [];
 
       setLoading(true);
 
@@ -346,30 +345,7 @@ function CreateInvitation() {
           <br />
           <br />
 
-          <label htmlFor="theme">Theme</label>
-          <select
-            id="theme"
-            value={formData.theme}
-            onChange={(e) => updateField("theme", e.target.value)}
-          >
-            {Object.values(themes).map((theme) => (
-              <option key={theme.id} value={theme.id}>
-                {theme.name}
-              </option>
-            ))}
-          </select>
-
-          <br />
-          <br />
-
-          <label htmlFor="invitationType">Invitation Mode</label>
-          <select id="invitationType" value={formData.invitationType} onChange={(e) => updateField('invitationType', e.target.value)}>
-            <option value="classic">Classic (all details shown)</option>
-            <option value="interactive">Interactive (progressive reveal)</option>
-          </select>
-
-          <br />
-          <br />
+          {/* Theme is derived from the selected event type; invitation is always interactive */}
 
           <label htmlFor="date">Date</label>
           <input
@@ -406,14 +382,28 @@ function CreateInvitation() {
           <br />
           <br />
 
-          <label htmlFor="food">Preferred Food</label>
-          <input
-            id="food"
-            type="text"
-            placeholder="Type of food the recipient prefers"
-            value={formData.food}
-            onChange={(e) => updateField("food", e.target.value)}
-          />
+          <label>Preferred Food (one per field)</label>
+          {(formData.foods || []).map((f, idx) => (
+            <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input
+                type="text"
+                placeholder={`Food item ${idx + 1}`}
+                value={f}
+                onChange={(e) => {
+                  const next = [...(formData.foods || [])];
+                  next[idx] = e.target.value;
+                  updateField('foods', next);
+                }}
+                style={{ flex: 1 }}
+              />
+              <button type="button" className="btn btn-outline" onClick={() => {
+                const next = [...(formData.foods || [])];
+                next.splice(idx, 1);
+                updateField('foods', next.length ? next : ['']);
+              }}>Remove</button>
+            </div>
+          ))}
+          <button type="button" className="btn btn-outline" onClick={() => updateField('foods', [...(formData.foods || []), ''])}>Add food</button>
 
           <br />
           <br />
@@ -558,22 +548,8 @@ function CreateInvitation() {
           <br />
           <br />
 
-          <h2>Interactive Questions</h2>
+          {/* Interactive questions removed — invitation will progressively reveal core details */}
 
-          {(formData.questions || []).map((q, i) => (
-            <div key={i} style={{ marginBottom: 12 }}>
-              <input type="text" placeholder="Question" value={q.question} onChange={(e) => updateQuestion(i, "question", e.target.value)} />
-              <br />
-              <input type="text" placeholder="Options (comma separated)" value={(q.options || []).join(",")} onChange={(e) => updateQuestion(i, "options", e.target.value.split(",").map(s => s.trim()))} />
-              <br />
-              <button type="button" onClick={() => removeQuestion(i)}>Remove</button>
-            </div>
-          ))}
-
-          <button type="button" onClick={addQuestion} className="btn btn-outline">Add Question</button>
-
-          <br />
-          <br />
 
           <button onClick={handleCreateInvitation} disabled={loading} className="btn">{loading ? "Creating..." : "Create Invitation"}</button>
 
