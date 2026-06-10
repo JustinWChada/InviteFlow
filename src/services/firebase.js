@@ -22,6 +22,8 @@ const firebaseConfig = {
 if (!firebaseConfig.apiKey) {
   console.warn('Firebase configuration is missing. Set VITE_FIREBASE_* environment variables (see .env.example).');
 }
+// Helpful debug: print the project id used by the client (non-sensitive)
+console.log('Firebase projectId (client):', firebaseConfig.projectId || '<not set>');
 
 const app = initializeApp(firebaseConfig);
 

@@ -203,7 +203,17 @@ function InvitationView() {
   }
 
   if (error) {
-    return <div className="app-container">{error}</div>;
+    return (
+      <div className="app-container">
+        <div style={{ marginBottom: 12, color: 'var(--danger)', fontWeight: 600 }}>{error}</div>
+        <div style={{ color: 'var(--muted)', fontSize: 14 }}>
+          If you created this invite from a different browser/account, it may be stored in a different Firebase project.
+        </div>
+        <div style={{ marginTop: 8, color: 'var(--muted)', fontSize: 13 }}>
+          Debug: client Firebase project: <strong>{import.meta.env.VITE_FIREBASE_PROJECT_ID || '<not set>'}</strong>
+        </div>
+      </div>
+    );
   }
 
   const getThemeForEventType = (eventType, themeFallback) => {
